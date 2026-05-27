@@ -1,14 +1,13 @@
 import os
-import requests
-from flask import Flask, request, redirect
+from flask import Flask, redirect, request
 
 app = Flask(__name__)
 
-SHOP          = "pryve.myshopify.com"
-CLIENT_ID     = "560a69204609c2130ce9d0e4fa544661"
-CLIENT_SECRET = "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"
-SCOPES        = "read_products,write_products,read_files,write_files"
-REDIRECT_URI  = "https://pryve-oauth.onrender.com/callback"
+SHOP          = os.environ.get("SHOP")
+CLIENT_ID     = os.environ.get("CLIENT_ID")
+CLIENT_SECRET = os.environ.get("CLIENT_SECRET")
+SCOPES        = os.environ.get("SCOPES")
+REDIRECT_URI  = os.environ.get("REDIRECT_URI")
 
 @app.route("/")
 def index():
@@ -25,6 +24,7 @@ def callback():
     code = request.args.get("code")
     if not code:
         return "<h2>Erreur: pas de code</h2>", 400
+    import requests
     r = requests.post(
         f"https://{SHOP}/admin/oauth/access_token",
         json={"client_id": CLIENT_ID, "client_secret": CLIENT_SECRET, "code": code}
@@ -38,5 +38,4 @@ def callback():
         </body></html>"""
     return f"<h2>Erreur: {data}</h2>", 400
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
+app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 3000)))
